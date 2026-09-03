@@ -1,0 +1,20 @@
+[package]
+name = "mitos-system-monitor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# GUI Framework (Matching the Terminal)
+eframe = "0.28.1"
+egui = "0.28.1"
+egui_plot = "0.28.1" # For real-time CPU/RAM charts
+
+# System Data Gathering
+sysinfo = "0.31" # Reads /proc/stat, /proc/meminfo, etc.
+
+# Async IPC (To talk to mitos-terminal)
+tokio = { version = "1.38", features = ["full"] }
+
+# Shared MITOS Ecosystem Contract
+mitos-utils = { git = "https://github.com/shark-empire/mitos-utils" }
+serde_json = "1.0"
