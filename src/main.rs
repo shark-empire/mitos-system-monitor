@@ -144,7 +144,7 @@ fn build_process_tree(sys: &System, filter: &str) -> Vec<ProcessTreeNode> {
     let procs: Vec<_> = sys.processes().iter().collect();
 
     // PID → index map for O(1) parent lookup
-    let _pid_to_idx: HashMap<u32, usize> = procs;
+    let _pid_to_idx: HashMap<u32, usize> = procs
         .iter()
         .enumerate()
         .map(|(i, (pid, _))| (pid.as_u32(), i))
