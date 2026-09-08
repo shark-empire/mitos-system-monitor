@@ -144,7 +144,7 @@ fn build_process_tree(sys: &System, filter: &str) -> Vec<ProcessTreeNode> {
     let procs: Vec<_> = sys.processes().iter().collect();
 
     // PID → index map for O(1) parent lookup
-    let pid_to_idx: HashMap<u32, usize> = procs
+    let _pid_to_idx: HashMap<u32, usize> = procs;
         .iter()
         .enumerate()
         .map(|(i, (pid, _))| (pid.as_u32(), i))
@@ -737,7 +737,7 @@ impl MitosMonitorApp {
         egui::ScrollArea::vertical()
             .max_height(80.0)
             .show(ui, |ui| {
-                ui.monospace(&cmd);
+                ui.monospace(cmd.to_string_lossy());
             });
 
         ui.add_space(16.0);
@@ -831,11 +831,11 @@ impl MitosMonitorApp {
                     }
                 }
 
-                egui::CollapsingHeader::new(format!(
-                    "📄 View full buffer ({} lines)",
-                    snap.text.lines().count()
-                ))
-                .id_salt(format!("buf_{}", snap.pid))
+egui::CollapsingHeader::new(format!(
+    "📄 View full buffer ({} lines)",
+    snap.text.lines().count()
+))
+.id_source(format!("buf_{}", snap.pid))
                 .show(ui, |ui| {
                     egui::ScrollArea::vertical()
                         .max_height(280.0)
