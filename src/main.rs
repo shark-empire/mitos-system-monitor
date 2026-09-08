@@ -26,7 +26,10 @@ struct SharedState {
 
 enum MonitorAction {
     Refresh,
-    Inject { terminal_pid: u32, widget: RichWidget },
+    Inject {
+        terminal_pid: u32,
+        widget: RichWidget,
+    },
 }
 
 #[derive(PartialEq)]
@@ -151,7 +154,11 @@ fn build_process_tree(sys: &System, filter: &str) -> Vec<ProcessTreeNode> {
     let mut nodes: Vec<ProcessTreeNode> = procs
         .iter()
         .filter(|(_, p)| {
-            filter.is_empty() || p.name().to_string_lossy().to_lowercase().contains(&filter.to_lowercase())
+            filter.is_empty()
+                || p.name()
+                    .to_string_lossy()
+                    .to_lowercase()
+                    .contains(&filter.to_lowercase())
         })
         .map(|(pid, p)| ProcessTreeNode {
             pid: pid.as_u32(),
@@ -166,11 +173,8 @@ fn build_process_tree(sys: &System, filter: &str) -> Vec<ProcessTreeNode> {
 
     // If filter is active, we need to rebuild the pid→idx mapping for this filtered subset
     let filtered_pids: HashSet<u32> = nodes.iter().map(|n| n.pid).collect();
-    let filtered_pid_to_idx: HashMap<u32, usize> = nodes
-        .iter()
-        .enumerate()
-        .map(|(i, n)| (n.pid, i))
-        .collect();
+    let filtered_pid_to_idx: HashMap<u32, usize> =
+        nodes.iter().enumerate().map(|(i, n)| (n.pid, i)).collect();
 
     // Second pass: wire up parent-child relationships (only within filtered set)
     for node in nodes.iter_mut() {
@@ -310,7 +314,8 @@ impl MitosMonitorApp {
             self.sys.refresh_processes(sysinfo::ProcessesToUpdate::All);
 
             self.cpu_history.pop_front();
-            self.cpu_history.push_back(self.sys.global_cpu_usage() as f64);
+            self.cpu_history
+                .push_back(self.sys.global_cpu_usage() as f64);
 
             let ram = if self.sys.total_memory() > 0 {
                 self.sys.used_memory() as f64 / self.sys.total_memory() as f64 * 100.0
@@ -333,7 +338,10 @@ impl MitosMonitorApp {
             color: Some("red".into()),
         };
         let button = RichWidget::Button {
-            label: format!("⚠️ Kill runaway: {} (PID {}) — {:.0}% CPU", name, proc_pid, cpu),
+            label: format!(
+                "⚠️ Kill runaway: {} (PID {}) — {:.0}% CPU",
+                name, proc_pid, cpu
+            ),
             cmd: format!("kill -9 {}", proc_pid),
         };
 
@@ -388,7 +396,10 @@ impl eframe::App for MitosMonitorApp {
         egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let g = self.state.lock().unwrap();
-                ui.label(format!("🖥️ {} mitos-terminal instance(s) live", g.terminals.len()));
+                ui.label(format!(
+                    "🖥️ {} mitos-terminal instance(s) live",
+                    g.terminals.len()
+                ));
                 ui.separator();
                 if let Some(e) = &g.last_error {
                     ui.colored_label(egui::Color32::from_rgb(255, 85, 85), e);
@@ -495,7 +506,9 @@ impl MitosMonitorApp {
             })
             .filter(|(_, name, _, _)| {
                 self.process_filter.is_empty()
-                    || name.to_lowercase().contains(&self.process_filter.to_lowercase())
+                    || name
+                        .to_lowercase()
+                        .contains(&self.process_filter.to_lowercase())
             })
             .collect();
         procs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal));
@@ -699,7 +712,11 @@ impl MitosMonitorApp {
                 ui.end_row();
 
                 ui.strong("Parent:");
-                ui.monospace(parent_pid.map(|p| p.to_string()).unwrap_or_else(|| "—".into()));
+                ui.monospace(
+                    parent_pid
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "—".into()),
+                );
                 ui.end_row();
 
                 ui.strong("CPU:");
@@ -717,9 +734,11 @@ impl MitosMonitorApp {
 
         ui.add_space(8.0);
         ui.label(egui::RichText::new("Command:").strong());
-        egui::ScrollArea::vertical().max_height(80.0).show(ui, |ui| {
-            ui.monospace(&cmd);
-        });
+        egui::ScrollArea::vertical()
+            .max_height(80.0)
+            .show(ui, |ui| {
+                ui.monospace(&cmd);
+            });
 
         ui.add_space(16.0);
         ui.heading("⚡ Actions");
@@ -738,7 +757,10 @@ impl MitosMonitorApp {
             Some(p) => format!("🚨 Alert ➜ terminal PID {}", p),
             None => "🚨 Alert ➜ (no terminal)".into(),
         };
-        if ui.button(egui::RichText::new(&target_label).strong()).clicked() {
+        if ui
+            .button(egui::RichText::new(&target_label).strong())
+            .clicked()
+        {
             self.send_alert(pid, &name, cpu);
         }
 
@@ -801,7 +823,10 @@ impl MitosMonitorApp {
                     for (line_no, line) in matches.iter().take(50) {
                         ui.horizontal(|ui| {
                             ui.monospace(format!("L{:04}", line_no + 1));
-                            ui.colored_label(egui::Color32::from_rgb(255, 255, 85), line.trim_end());
+                            ui.colored_label(
+                                egui::Color32::from_rgb(255, 255, 85),
+                                line.trim_end(),
+                            );
                         });
                     }
                 }
@@ -812,15 +837,17 @@ impl MitosMonitorApp {
                 ))
                 .id_salt(format!("buf_{}", snap.pid))
                 .show(ui, |ui| {
-                    egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
-                        let mut text = snap.text.as_str();
-                        ui.add(
-                            egui::TextEdit::multiline(&mut text)
-                                .font(egui::TextStyle::Monospace)
-                                .desired_width(f32::INFINITY)
-                                .text_color(egui::Color32::from_gray(200)),
-                        );
-                    });
+                    egui::ScrollArea::vertical()
+                        .max_height(280.0)
+                        .show(ui, |ui| {
+                            let mut text = snap.text.as_str();
+                            ui.add(
+                                egui::TextEdit::multiline(&mut text)
+                                    .font(egui::TextStyle::Monospace)
+                                    .desired_width(f32::INFINITY)
+                                    .text_color(egui::Color32::from_gray(200)),
+                            );
+                        });
                 });
             });
         }
