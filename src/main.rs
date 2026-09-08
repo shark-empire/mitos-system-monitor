@@ -831,11 +831,11 @@ impl MitosMonitorApp {
                     }
                 }
 
-egui::CollapsingHeader::new(format!(
-    "📄 View full buffer ({} lines)",
-    snap.text.lines().count()
-))
-.id_source(format!("buf_{}", snap.pid))
+                egui::CollapsingHeader::new(format!(
+                    "📄 View full buffer ({} lines)",
+                    snap.text.lines().count()
+                ))
+                .id_source(format!("buf_{}", snap.pid))
                 .show(ui, |ui| {
                     egui::ScrollArea::vertical()
                         .max_height(280.0)
