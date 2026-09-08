@@ -1,0 +1,52 @@
+# .github/workflows/fmt-bot.yml
+#
+# Automatic formatting bot.
+# Runs `cargo fmt --all` on every push to main/master and commits any
+# changes back to the branch as a bot commit.
+
+name: Fmt Bot
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  auto-fmt:
+    name: cargo fmt --all (auto-commit)
+    runs-on: ubuntu-latest
+
+    # Never run on the bot's own commits (prevents infinite loops).
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Run cargo fmt
+        run: cargo fmt --all
+
+      - name: Commit and push formatting changes
+        run: |
+          git config user.name  "mitos-fmt-bot"
+          git config user.email "mitos-fmt-bot@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Code is already formatted."
+          else
+            git commit -m "style: automatic cargo fmt [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
