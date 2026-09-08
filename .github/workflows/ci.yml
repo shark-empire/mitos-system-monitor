@@ -1,4 +1,4 @@
-name: CI for mitos-system-monitor
+name: CI for mitos system-monitor
 
 on:
   push:
