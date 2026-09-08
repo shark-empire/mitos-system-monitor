@@ -9,6 +9,7 @@ eframe = "0.28.1"
 egui = "0.28.1"
 egui_plot = "0.28.1" # For real-time CPU/RAM charts
 
+glob = "0.3"
 # System Data Gathering
 sysinfo = "0.31" # Reads /proc/stat, /proc/meminfo, etc.
 
